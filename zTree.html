@@ -1,0 +1,111 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>zTree</title>
+
+<!--
+<link rel="stylesheet" href="/tree/css/zTreeStyle.css" type="text/css">
+<link rel="stylesheet" href="/easyui/themes/gray/easyui.css" type="text/css">
+<link rel="stylesheet" href="/easyui/themes/icon.css" type="text/css">
+<script type="text/javascript" src="/js/jquery-1.7.1.min.js"></script>
+<script type="text/javascript" src="/tree/js/jquery.ztree.core-3.5.min.js"></script>
+<script type="text/javascript" src="/easyui/jquery.easyui.min.js"></script>
+
+--->
+
+<link rel="stylesheet" href="css/zTreeStyle/zTreeStyle1.css" type="text/css">
+<link rel="stylesheet" href="css/easyui.css" type="text/css">
+	<!-- <link rel="stylesheet" href="css/zTreeStyle/zTreeStyle.css" type="text/css"> -->
+	<script type="text/javascript" src="js/jquery-1.9.0.min.js"></script>
+	<script type="text/javascript" src="js/jquery.ztree.core-3.5.js"></script>
+	
+	<script type="text/javascript" src="js/jquery.easyui.min.js"></script>
+	
+<script type="text/javascript">
+    var tree = null;
+var data = [{id:"0",name:"根目录",pid:"-1",index:"0"},
+          {id:"1",name:"用户管理",pid:"0",index:"1"},
+          {id:"2",name:"用户管理1",pid:"1",index:"2"},
+          {id:"3",name:"用户管理2",pid:"1",index:"3"},
+          {id:"4",name:"系统管理",pid:"0",index:"4"},
+          {id:"5",name:"系统管理1",pid:"4",index:"5"},
+          {id:"6",name:"系统管理2",pid:"4",index:"6"}];
+$(function() {
+  var setting = {
+   data:{
+    simpleData:{
+     enable:true,
+     idKey:"id",
+     pIdKey:"pid",
+     rootPId: -1
+    }
+   },
+   view:{
+    dblClickExpand:false,//双击节点图标展开节点
+    selectedMulti:false
+   },
+   callback:{
+    onRightClick: function(event, treeId, treeNode) {
+        // 判断点击了tree的“空白”部分，即没有点击到tree节点上
+        if (!treeNode && event.target.tagName.toLowerCase() != "button" && $(event.target).parents("a").length == 0) {
+         tree.cancelSelectedNode();
+         // 只显示添加菜单项，这个只是外观上的控制，不能控制到点击事件！菜单项的点击事件还要额外判断！
+         $('#modifyNode').attr('disabled', true);
+         $('#delNode').attr('disabled', true);
+        } else if (treeNode && !treeNode.noR) { // 判断点击的是tree节点
+         tree.selectNode(treeNode); // 选中tree节点
+         $('#modifyNode').attr('disabled', false);
+         $('#delNode').attr('disabled', false);
+         if (treeNode.children && treeNode.children.length > 0) { // 这里父节点不能直接删除，也可以在菜单项的click事件中根据当前节点另作判断
+          $('#delNode').attr('disabled', true);
+         }
+        }
+        // 在ztree右击事件中注册easyui菜单的显示和点击事件，让这两个框架实现共用event，这个是整合的关键点
+     $('#mm').menu({
+            onClick: function(item) {
+                if (item.name == 'new') {
+                 alert("新增节点");
+                } else if (item.name == 'modify' && !$('#modifyNode').attr('disabled')) {
+                 alert("修改节点");
+                } else if (item.name == 'del' && !$('#delNode').attr('disabled')) {
+                 /*
+                 if (treeNode.children && treeNode.children.length > 0) {
+                  alert("该节点是父节点，还要继续删除么？");
+                 }*/
+                 alert("删除节点");
+                }
+         }
+        });   
+           $('#mm').menu('show', {  
+               left: event.pageX,  
+               top: event.pageY
+           });
+       },
+    onClick:function(event, treeId, treeNode) {
+     //alert(treeNode.name + "," + treeNode.isParent + "," + treeNode.index);
+    }
+   }  
+  };
+  // 新建一个节点
+  var node = {id:"7",name:"系统管理3"};
+  tree = $.fn.zTree.init($("#tree"), setting, data);
+  // 获取父节点
+  var pnode = tree.getNodeByParam("id",4, null);
+  // 将子节点添加到父节点中
+  tree.addNodes(pnode, node);
+});
+</script>
+</head>
+<body>
+<div id="content">
+  <ul id="tree" class="ztree" style="border:1px solid green;width:200px;"></ul>
+</div>
+
+<div id="mm" class="easyui-menu" style="width:120px;">  
+         <div id="addNode" data-options="name:'new'">增加节点</div>
+         <div id="modifyNode" data-options="name:'modify'">修改节点</div>
+         <div id="delNode" data-options="name:'del'">删除节点</div>  
+     </div>  
+</body>
+</html>
